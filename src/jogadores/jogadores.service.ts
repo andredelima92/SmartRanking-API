@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CriarJogadorDto } from './dtos/criar-jogador.dto';
 import { Jogador } from './interfaces/jogador.interface';
 import { v4 as uuid } from 'uuid';
@@ -11,27 +16,14 @@ export class JogadoresService {
     @InjectModel('Jogador') private readonly jogadorModel: Model<Jogador>,
   ) {}
 
-  // private readonly logger = new Logger(JogadoresService.name);
-
-  async criarAtualizarJogador(
+  async atualizarJogador(
+    id: string,
     criarJogadorDto: CriarJogadorDto,
   ): Promise<Jogador> {
-    const { email } = criarJogadorDto;
-
-    const jogadorEncontrado = await this.jogadorModel.findOne({ email }).exec();
-
-    if (!jogadorEncontrado) {
-      return this.criar(criarJogadorDto);
-    }
-
-    return this.atualizar(criarJogadorDto);
-  }
-
-  private async atualizar(criarJogadorDto: CriarJogadorDto): Promise<Jogador> {
     return await this.jogadorModel
       .findOneAndUpdate(
         {
-          email: criarJogadorDto.email,
+          _id: id,
         },
         {
           $set: criarJogadorDto,
@@ -40,7 +32,16 @@ export class JogadoresService {
       .exec();
   }
 
-  private async criar(criarJogadorDto: CriarJogadorDto): Promise<Jogador> {
+  async criarJogador(criarJogadorDto: CriarJogadorDto): Promise<Jogador> {
+    const { email } = criarJogadorDto;
+    const jogadorEncontrado = await this.jogadorModel.findOne({ email }).exec();
+
+    if (jogadorEncontrado) {
+      throw new BadRequestException(
+        `Jogador com e-mail: ${email} ja cadastrado`,
+      );
+    }
+
     const jogadorCriado = new this.jogadorModel(criarJogadorDto);
     return await jogadorCriado.save();
   }
@@ -59,7 +60,11 @@ export class JogadoresService {
     return jogador;
   }
 
-  async deletarJogador(email: string): Promise<void> {
-    await this.jogadorModel.deleteOne({ email }).exec();
+  async consultarJogadorPeloId(id: string): Promise<Jogador> {
+    return await this.jogadorModel.findOne({ _id: id });
+  }
+
+  async deletarJogador(id: string): Promise<void> {
+    await this.jogadorModel.deleteOne({ _id: id }).exec();
   }
 }
