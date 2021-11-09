@@ -6,7 +6,7 @@ import { CategoriasModule } from './categorias/categorias.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
-      'mongodb+srv://root:devpassword@cluster-dev.c1imn.mongodb.net/smartRanking?retryWrites=true&w=majority',
+      'mongodb+srv://root:password@cluster-dev.c1imn.mongodb.net/smartRanking?retryWrites=true&w=majority',
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,
